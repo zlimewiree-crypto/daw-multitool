@@ -1,0 +1,10 @@
+watchdog
+mutagen
+librosa
+scikit-learn
+soundfile
+numpy
+requests
+keyring
+imageio-ffmpeg
+sounddevice

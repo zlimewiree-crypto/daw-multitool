@@ -1,0 +1,12 @@
+filters:
+  and:
+    - file.inFolder("notes")
+properties:
+  file.mtime:
+    displayName: Last changed
+views:
+  - type: table
+    name: All notes
+    order:
+      - file.name
+      - file.mtime

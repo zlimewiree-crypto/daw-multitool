@@ -1,0 +1,322 @@
+{
+  "watch_folder": "~/Music/Exports",
+  "output_folder": "~/Music/Exports/Sorted",
+  "mode": "move",
+  "tags": {
+    "loop_": "Loops",
+    "beat_": "Beats",
+    "stem_": "Stems"
+  },
+  "loops_by_month": true,
+  "length_rules": {
+    "loop_max_seconds": 30,
+    "beat_min_seconds": 90
+  },
+  "unsorted_folder": "Unsorted",
+  "extensions": [
+    ".mp3",
+    ".wav"
+  ],
+  "settle_seconds": 3,
+  "bounce_sorter": {
+    "source_folder": "~/Downloads",
+    "output_folder": "",
+    "sorted_folder_name": "User Vault",
+    "beats_folder_name": "Beats",
+    "loops_folder_name": "Melodies",
+    "review_folder_name": "Needs Review",
+    "split_by_month": true,
+    "mode": "move",
+    "extensions": [
+      ".wav",
+      ".mp3"
+    ],
+    "include_subfolders": false,
+    "only_recent_days": 0,
+    "name_contains": "",
+    "name_excludes": "",
+    "min_seconds": 5,
+    "add_date": false,
+    "date_position": "start",
+    "date_format": "%Y-%m-%d",
+    "beat_threshold": 0.8,
+    "loop_threshold": 0.2,
+    "loop_name_hint": 2.0,
+    "melody_name_words": [
+      "loop",
+      "loops",
+      "lp",
+      "mel",
+      "melody",
+      "melodies",
+      "sample",
+      "starter"
+    ],
+    "drum_name_words": [
+      "drum",
+      "drums",
+      "perc",
+      "percussion",
+      "hat",
+      "hats",
+      "hihat",
+      "kick",
+      "snare",
+      "808",
+      "beat",
+      "beatoff"
+    ],
+    "analysis_seconds": 120,
+    "analysis_workers": 4,
+    "minimum_training_per_class": 5,
+    "settle_seconds": 3,
+    "add_bpm_key": false
+  },
+  "credits": {
+    "producer_name": "",
+    "known_producers": [],
+    "credit_format": "prod. {credits}",
+    "ignore_words": [
+      "limewire",
+      "limeewiree",
+      "prod",
+      "loop",
+      "mel",
+      "melody",
+      "stems",
+      "tag"
+    ]
+  },
+  "project_library": {
+    "export_folders": [
+      "~/Downloads",
+      "~/Desktop",
+      "~/Music"
+    ],
+    "export_search_depth": 3,
+    "extra_daws": {
+      ".ptx": {
+        "app": "Pro Tools"
+      },
+      ".ptf": {
+        "app": "Pro Tools"
+      },
+      ".pts": {
+        "app": "Pro Tools"
+      }
+    },
+    "extra_project_folders": [
+      "~/Documents/Pro Tools"
+    ],
+    "sort_column": "changed",
+    "sort_descending": true
+  },
+  "auto_poster": {
+    "output_folder": "~/Movies/DAW Multitool/Auto Poster",
+    "default_hashtags": "",
+    "snippet_seconds": 30,
+    "snippet_snap_to_beat": true,
+    "tag_path": "",
+    "tag_every_seconds": 30,
+    "tag_first_seconds": 5,
+    "tag_volume_db": -3,
+    "tag_mp3_bitrate": "320k",
+    "project_folders": [
+      "~/Documents/Image-Line/FL Studio/Projects",
+      "~/Desktop/ableton projects",
+      "~/Music",
+      "~/Downloads",
+      "~/Desktop"
+    ],
+    "project_search_depth": 3,
+    "daws": {
+      ".flp": {
+        "app": "FL Studio 2026",
+        "process": "OsxFL",
+        "start_keys": [
+          115
+        ]
+      },
+      ".als": {
+        "app": "Ableton Live 12 Suite",
+        "process": "Live",
+        "start_keys": [
+          115
+        ]
+      }
+    },
+    "project_load_seconds": 90,
+    "project_settle_seconds": 3,
+    "recording_lead_seconds": 1.5,
+    "recording_finish_seconds": 10,
+    "loudness_min_lufs": -16,
+    "true_peak_max_db": -1,
+    "ffmpeg_path": "",
+    "audio_extensions": [
+      ".mp3",
+      ".wav",
+      ".aif",
+      ".aiff",
+      ".flac",
+      ".m4a",
+      ".aac",
+      ".ogg",
+      ".opus"
+    ],
+    "image_extensions": [
+      ".png",
+      ".jpg",
+      ".jpeg",
+      ".webp",
+      ".bmp",
+      ".tiff"
+    ],
+    "video_extensions": [
+      ".mp4",
+      ".mov",
+      ".m4v",
+      ".webm",
+      ".mkv",
+      ".avi"
+    ],
+    "formats": {
+      "Portrait 9:16": [
+        1080,
+        1920
+      ],
+      "Square 1:1": [
+        1080,
+        1080
+      ],
+      "Landscape 16:9": [
+        1920,
+        1080
+      ]
+    },
+    "platform_formats": {
+      "youtube": "Landscape 16:9",
+      "tiktok": "Portrait 9:16",
+      "instagram": "Portrait 9:16"
+    },
+    "fps": 30,
+    "preset": "fast",
+    "crf": 20,
+    "video_max_bitrate": "20M",
+    "duration_tolerance_seconds": 0.5,
+    "audio_bitrate": "128k",
+    "sample_rate": 48000,
+    "settle_seconds": 3,
+    "probe_timeout": 30,
+    "http_timeout": 60,
+    "oauth_timeout": 300,
+    "schedule_check_minutes": 5,
+    "schedule_max_late_hours": 24,
+    "schedule_spacing_hours": 24,
+    "poll_seconds": 3,
+    "poll_attempts": 40,
+    "upload_chunk_bytes": 8388608,
+    "upload_retries": 3,
+    "instagram_max_seconds": 900,
+    "instagram_min_seconds": 3,
+    "instagram_max_bytes": 300000000,
+    "instagram_hashtag_limit": 30,
+    "instagram_mention_limit": 20,
+    "instagram_audio_name": true,
+    "youtube_title_limit": 100,
+    "youtube_caption_limit": 5000,
+    "youtube_category_id": "10",
+    "caption_limit": 2200,
+    "keychain_service": "com.dawmultitool.auto-poster",
+    "tiktok_callback_port": 8765,
+    "instagram_callback_port": 8766,
+    "instagram_page_limit": 20,
+    "youtube_auth_url": "https://accounts.google.com/o/oauth2/v2/auth",
+    "youtube_token_url": "https://oauth2.googleapis.com/token",
+    "youtube_api_url": "https://www.googleapis.com/youtube/v3",
+    "youtube_upload_url": "https://www.googleapis.com/upload/youtube/v3/videos",
+    "youtube_scopes": [
+      "https://www.googleapis.com/auth/youtube.upload",
+      "https://www.googleapis.com/auth/youtube.readonly"
+    ],
+    "instagram_api_url": "https://graph.facebook.com/v25.0",
+    "instagram_auth_url": "https://www.facebook.com/v25.0/dialog/oauth",
+    "instagram_scopes": [
+      "instagram_basic",
+      "instagram_content_publish",
+      "pages_show_list",
+      "pages_read_engagement",
+      "instagram_manage_insights",
+      "business_management"
+    ],
+    "tiktok_auth_url": "https://www.tiktok.com/v2/auth/authorize/",
+    "tiktok_token_url": "https://open.tiktokapis.com/v2/oauth/token/",
+    "tiktok_api_url": "https://open.tiktokapis.com/v2",
+    "tiktok_scopes": [
+      "video.publish"
+    ],
+    "overlay_fonts": [
+      "/System/Library/Fonts/Supplemental/Arial Black.ttf",
+      "/System/Library/Fonts/Supplemental/Arial Bold.ttf",
+      "/Library/Fonts/Arial Bold.ttf"
+    ],
+    "overlay_fonts_regular": [
+      "/System/Library/Fonts/Supplemental/Arial Bold.ttf",
+      "/System/Library/Fonts/Supplemental/Arial.ttf",
+      "/Library/Fonts/Arial.ttf"
+    ],
+    "overlay_accent": "0xc4b0ff",
+    "waveform_colour": "white@0.8",
+    "waveform_volume": 0.5,
+    "auto_background_colours": [
+      "0x08070c",
+      "0x6c2fca"
+    ],
+    "visual_kind": "auto",
+    "title_template": "{title} ({credits}) | {bpm} {key}",
+    "short_seconds": 30,
+    "overlay": true,
+    "waveform": true,
+    "autopilot_enabled": false,
+    "autopilot_folder": "",
+    "autopilot_check_seconds": 30,
+    "autopilot_options": {},
+    "post_times": [
+      "18:00"
+    ],
+    "background_turns": {}
+  },
+  "music": {
+    "detect_bpm_key": true,
+    "bpm_range": [
+      100,
+      200
+    ],
+    "bpm_center": 150,
+    "key_minor_bias": 0.15,
+    "analysis_seconds": 90,
+    "heard_key_in_text": false
+  },
+  "varispeed": {
+    "output_folder": "~/Music/DAW Multitool/Varispeed",
+    "min_speed": 0.5,
+    "max_speed": 2.0,
+    "sample_format": "PCM_24",
+    "speed": 1.0,
+    "recordings_folder": "~/Music/Varispeed Recordings",
+    "output_enabled": true,
+    "output_device": "",
+    "output_left_channel": 0,
+    "period_frames": 1024,
+    "max_rise_semitones_per_period": 0.5,
+    "max_fall_semitones_per_period": 1.0,
+    "min_glide_seconds": 0.1,
+    "source": "files"
+  },
+  "audio": {
+    "pass_through": false,
+    "output_device": "",
+    "output_left_channel": 0,
+    "plugin_folder": "/Library/Audio/Plug-Ins/HAL",
+    "device_check_seconds": 3
+  }
+}

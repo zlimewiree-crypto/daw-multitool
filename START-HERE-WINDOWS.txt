@@ -1,0 +1,27 @@
+DAW MULTITOOL — SOURCE HANDOFF (v0.9.4)
+
+This ZIP contains the application source, assets, native helper source, tests,
+configuration template, trained detector weights and project notes.
+
+WINDOWS RECIPIENT: READ THIS FIRST
+1. Right-click the ZIP and choose Extract All. Open the extracted folder in your editor.
+2. Read notes/ARCHITECTURE.md, notes/STATE.md and notes/HANDOFF.md for the project map.
+3. You can edit the source on Windows, but this release is a macOS application.
+   Installing Python alone will not make it run on Windows. There is no Windows EXE here.
+4. A Windows port must replace Unix file locks (fcntl), macOS Keychain access,
+   DAW window capture/playback controls, launch-agent scheduling and Finder/open commands.
+   SoundAnalysis, the Core Audio device/bridge and CoreAudio-specific preview options
+   need Windows alternatives or explicit feature disabling. Build and test the Windows
+   executable on Windows after those changes. Mac .command files and setup.sh are not
+   Windows launchers.
+5. Keep the existing dry-run, no-overwrite and audio-file protection rules. Test with
+   generated audio under test_exports, never another person's real exports folder.
+
+WHAT WAS LEFT OUT
+Music/audio/video files, DAW sessions, personal config.json, labels and caches,
+account tokens/credential files, Keychain contents, local agent logs/settings,
+editor/Obsidian workspace state, Git history, virtual environments and compiled builds.
+Your own accounts must be connected separately; no login credentials are included.
+
+All original project files remain untouched. This is a source snapshot, not an installer.
+SHARE-MANIFEST.json lists source files and their SHA-256 checksums.
