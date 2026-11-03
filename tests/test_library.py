@@ -18,7 +18,7 @@ class LibraryTests(unittest.TestCase):
         (ROOT / "test_exports").mkdir(exist_ok=True)
         self.base = Path(tempfile.mkdtemp(prefix="library_test_", dir=ROOT / "test_exports"))
         # Fakes are moved out, never deleted (same rule as real audio)
-        self.addCleanup(lambda: shutil.move(str(self.base), tempfile.mkdtemp(prefix="daw-library-tests-", dir="/private/tmp")))
+        self.addCleanup(lambda: shutil.move(str(self.base), tempfile.mkdtemp(prefix="daw-library-tests-", dir=tempfile.gettempdir())))
         poster = poster_settings()
         self.settings = {"project_folders": [str(self.base / "Projects")], "project_search_depth": 3,
                          "daws": poster["daws"], "audio_extensions": poster["audio_extensions"],
@@ -53,6 +53,7 @@ class LibraryTests(unittest.TestCase):
         self.assertEqual(visible(library, VIEWS[2]), [(None, [stray])])
         self.assertEqual([p for p, _ in visible(library, VIEWS[0], "140 FMIN")], [needa])  # search finds exports too
 
+    @patch("multitool.platform.IS_MAC", True)
     def test_pro_tools_sessions_are_listed_without_their_backups_or_recordings(self):
         self.settings["daws"] = {**self.settings["daws"], ".ptx": {"app": "Pro Tools"}, ".ptf": {"app": "Pro Tools"}}
         session = self.fake("Projects/vocal take/vocal take.ptx", age=20)
@@ -70,6 +71,7 @@ class LibraryTests(unittest.TestCase):
             open_in_daw(session, self.settings)
         self.assertEqual(run.call_args.args[0], ["/usr/bin/open", "-a", "Pro Tools", str(session)])
 
+    @patch("multitool.platform.IS_MAC", True)
     def test_pro_tools_is_added_for_the_library_only(self):
         from multitool.library.core import load_settings
         settings = load_settings()
@@ -80,7 +82,9 @@ class LibraryTests(unittest.TestCase):
             add_project_folder(settings, self.base / "More")
         self.assertNotIn("~/Documents/Pro Tools", save.call_args.args[1]["project_folders"])
 
+    @patch("multitool.platform.IS_MAC", True)
     def test_open_in_daw_hands_the_project_to_its_app(self):
+        self.settings["daws"][".als"]["app"] = "Ableton Live"
         project = self.fake("Projects/beat.als")
         with patch("multitool.library.core.subprocess.run") as run:
             run.return_value.returncode = 0

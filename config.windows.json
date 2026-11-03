@@ -1,0 +1,7 @@
+{
+  "auto_poster": {
+    "overlay_fonts": ["%WINDIR%/Fonts/ariblk.ttf", "%WINDIR%/Fonts/arialbd.ttf"],
+    "overlay_fonts_regular": ["%WINDIR%/Fonts/arial.ttf"],
+    "project_folders": ["~/Documents/Image-Line/FL Studio/Projects", "~/Documents/Ableton", "~/Music"]
+  }
+}

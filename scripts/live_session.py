@@ -3,7 +3,6 @@ notes/LIVE_SESSION.md, so Codex can take over even when Claude stops mid-task at
 write a handoff. It also holds Claude's own automatic continue (at the limit reset) when project files
 changed meanwhile, and tells Claude what changed once the user brings it back."""
 from datetime import datetime
-import fcntl
 import json
 import os
 from pathlib import Path
@@ -14,6 +13,8 @@ import time
 
 # Standard library only: this hook has to keep working while an agent is halfway through editing the app.
 ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT))
+from multitool.platform import lock_file  # standard library only; also works when the hook runs on Windows
 NOTE = "notes/LIVE_SESSION.md"
 STATE = ".claude/live_session.json"
 WATCHED = ("multitool", "tests", "scripts", "notes", ".agents")  # where another agent's edits show up
@@ -194,7 +195,7 @@ def run(event, root=ROOT, now=None):
     state_path = root / STATE
     state_path.parent.mkdir(exist_ok=True)
     with open(state_path.with_suffix(".lock"), "w") as lock:
-        fcntl.flock(lock, fcntl.LOCK_EX)  # Claude can run several tools at once
+        lock_file(lock)  # Claude can run several tools at once
         try:
             state = json.loads(state_path.read_text())
         except (OSError, ValueError):

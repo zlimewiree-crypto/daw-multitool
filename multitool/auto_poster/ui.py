@@ -12,6 +12,7 @@ import webbrowser
 
 from app_paths import FROZEN
 from multitool import credits, music
+from multitool import platform as host_platform
 from multitool.scrolling import scroll_area
 from multitool.theme import DANGER, MUTED, apply_theme, banner, empty_state, footer, section_title
 from . import autopilot, results, schedule, setup_guide
@@ -118,6 +119,8 @@ class AutoPosterApp:
         self.visual = tk.StringVar(value=self.settings.get("visual", ""))
         self.output = tk.StringVar(value=self.settings["output_folder"])
         self.visual_kind = tk.StringVar(value=self.settings["visual_kind"] if self.settings["visual_kind"] in BACKGROUND_HINTS else "auto")
+        if not host_platform.IS_MAC and self.visual_kind.get() == "project":
+            self.visual_kind.set("auto")
         self.visual_hint = tk.StringVar()
         row = ttk.Frame(media)
         row.pack(fill="x", pady=(0, 3))
@@ -125,6 +128,7 @@ class AutoPosterApp:
         for value, text in (("auto", "Automatic"), ("image", "Still image"), ("video", "Downloaded video"),
                             ("project", "Project screen recording")):
             ttk.Radiobutton(row, text=text, value=value, variable=self.visual_kind,
+                            state="disabled" if value == "project" and not host_platform.IS_MAC else "normal",
                             command=self.visual_kind_changed).pack(side="left", padx=(6, 12))
         hint = ttk.Label(media, textvariable=self.visual_hint, foreground=MUTED, wraplength=800, justify="left")
         hint.pack(fill="x", pady=(4, 8))
@@ -510,7 +514,7 @@ class AutoPosterApp:
         page = self.account_page
         ttk.Label(page, text="Connect accounts", style="Heading.TLabel").pack(anchor="w")
         ttk.Label(page, text="Connect once and pick the account in your browser. The first time, Connect walks you "
-                  "through a short setup. Logins stay in your Mac's Keychain.", style="Muted.TLabel",
+                  "through a short setup. Logins stay in your computer's secure credential store.", style="Muted.TLabel",
                   wraplength=920).pack(anchor="w", pady=(4, 22))
         self.connect_buttons, self.key_labels, self.setup_windows = [], {}, {}
         for platform, hint in (("youtube", "Pick your Google account, then the channel."),
@@ -563,7 +567,7 @@ class AutoPosterApp:
         self.root.lift()
         self.root.attributes("-topmost", True)
         self.root.after(400, lambda: self.root.attributes("-topmost", False))
-        if FROZEN:  # the built app: also make it the active app, not just the top window
+        if FROZEN and host_platform.IS_MAC:  # the built Mac app: also make it the active app
             subprocess.Popen(["osascript", "-e", 'tell application id "com.dawmultitool.app" to activate'],
                              stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
@@ -986,7 +990,7 @@ class AutoPosterApp:
                 try:
                     video = Path(video_variant(manifest(receipt), self.settings["platform_formats"][platform])["video"])
                     if video.exists():
-                        subprocess.Popen(["/usr/bin/open", str(video)])
+                        host_platform.open_path(video)
                         return
                 except (OSError, ValueError, KeyError) as error:
                     self.status.set(str(error))
@@ -1218,8 +1222,9 @@ class AutoPosterApp:
     def build_schedule(self):
         page = self.schedule_page
         ttk.Label(page, text="Scheduled posts", style="Heading.TLabel").pack(anchor="w")
-        ttk.Label(page, text="Select videos on the Create tab and click Schedule. Due posts go out while DAW Multitool "
-                  "is open; turn on the helper to post even when it's closed (your Mac must be on and logged in). "
+        helper_hint = ("On Mac, the optional helper can post while the app is closed. " if host_platform.IS_MAC else
+                       "On Windows, keep Auto Poster open for scheduled posts. ")
+        ttk.Label(page, text="Select videos on the Create tab and click Schedule. " + helper_hint +
                   f"Posts more than {self.settings['schedule_max_late_hours']} h late are skipped, never sent by surprise.",
                   wraplength=920).pack(anchor="w", pady=8)
         self.schedule_list = ttk.Treeview(page, columns=("due", "track", "platforms", "state", "detail"), show="headings")
@@ -1235,6 +1240,8 @@ class AutoPosterApp:
         ttk.Button(row, text="Refresh", command=self.refresh_schedule).pack(side="left", padx=8)
         self.agent_label = tk.StringVar()
         self.agent_button = ttk.Button(row, textvariable=self.agent_label, command=self.toggle_agent)
+        if not host_platform.IS_MAC:
+            self.agent_button.configure(state="disabled")
         self.agent_button.pack(side="right")
         self.refresh_schedule()
 
@@ -1246,6 +1253,8 @@ class AutoPosterApp:
                 f"{due:%a %d %b %H:%M}", entry["track"], ", ".join(NAMES[p] for p in entry["platforms"]),
                 entry["state"], entry["detail"]))
         self.agent_label.set("Turn off posting while closed" if schedule.agent_installed() else "Post while the app is closed…")
+        if not host_platform.IS_MAC:
+            self.agent_label.set("Background helper: Mac only")
 
     def cancel_scheduled(self):
         ids = set(self.schedule_list.selection())

@@ -32,7 +32,7 @@ class MultitoolTests(unittest.TestCase):
             self.assertIn("organizer", output.getvalue())
             initialize.assert_not_called()
             window.assert_not_called()
-        probe = subprocess.run([sys.executable, "-c",
+        probe = subprocess.run([sys.executable, "-X", "utf8", "-c",  # UTF-8 mode, as Windows runs use (notes/WINDOWS.md)
             "import sys; from multitool.app import main; main(['--dry-run']); "
             "assert 'drums' not in sys.modules and 'librosa' not in sys.modules"], capture_output=True, text=True)
         self.assertEqual(probe.returncode, 0, probe.stderr)

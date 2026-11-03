@@ -12,8 +12,8 @@ to choose each post's visibility and confirm it).
 """
 from contextlib import contextmanager
 from dataclasses import replace
-from datetime import datetime, time as clock, timedelta
-import fcntl
+from datetime import datetime, time as clock, timedelta, timezone
+from multitool import platform
 import json
 from pathlib import Path
 import threading
@@ -54,11 +54,11 @@ def ledger_lock():
     """One writer at a time, across threads and the background helper."""
     DATA_DIR.mkdir(parents=True, exist_ok=True)
     with _LOCK, (DATA_DIR / ".autopilot.lock").open("a") as lock:
-        fcntl.flock(lock, fcntl.LOCK_EX)
+        platform.lock_file(lock)
         try:
             yield
         finally:
-            fcntl.flock(lock, fcntl.LOCK_UN)
+            platform.unlock_file(lock)
 
 
 RETRIES, RETRY_AFTER = 3, 3600  # a failed file is tried again up to 3 times, an hour apart
@@ -124,7 +124,7 @@ def claim(path, now=None):
             return None
         data["files"][key] = {"state": "working", "detail": "", "name": Path(path).name, "claimed": now,
                               "attempts": (entry or {}).get("attempts", 0) + 1,
-                              "when": datetime.fromtimestamp(now).astimezone().isoformat(timespec="seconds")}
+                       "when": datetime.fromtimestamp(now, timezone.utc).astimezone().isoformat(timespec="seconds")}
         atomic_json(ledger_file(), data)
     return key
 

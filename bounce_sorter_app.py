@@ -397,6 +397,17 @@ class App:
     def play(self, row):
         self.stop_playing()
         path = self.moves[row].path
+        from multitool import platform
+        if not platform.IS_MAC and not FFPLAY:
+            try:
+                from multitool.varispeed.player import FilePreview
+                self.player = FilePreview(path)
+            except Exception as error:
+                self.status.set(f"Couldn't play {path.name}: {error}")
+                return
+            self.playing_row = row
+            self.status.set(f"▶ {path.name}   (Space = stop · B = beat · M = melody)")
+            return
         if FFPLAY:
             # Start a quarter of the way in, so long intros don't hide the drums
             start = int((sorter.audio_seconds(path) or 0) * 0.25)
@@ -412,7 +423,7 @@ class App:
         self.status.set(f"▶ {path.name}   (Space = stop · B = beat · M = melody)")
 
     def stop_playing(self):
-        if self.player and self.player.poll() is None:
+        if self.player:
             self.player.terminate()
         self.player, self.playing_row = None, None
 

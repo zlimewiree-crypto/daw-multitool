@@ -132,6 +132,7 @@ class LiveSessionTests(unittest.TestCase):
         self.send("UserPromptSubmit", prompt="hello")
         self.assertIn("hello", self.note())
 
+    @unittest.skipUnless((ROOT / ".claude/settings.json").exists(), "local Claude hooks are not shared in the repository")
     def test_claude_code_runs_the_script_on_every_event(self):
         hooks = json.loads((ROOT / ".claude/settings.json").read_text())["hooks"]
         for event in live.HANDLERS:

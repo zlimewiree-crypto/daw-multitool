@@ -12,6 +12,7 @@ import time
 import uuid
 
 from app_paths import update_config
+from multitool import platform
 from .render import Cancelled, ffmpeg_binary, media_info
 
 # DAW backups/internals; Pro Tools keeps recordings in "Audio Files" and copies of the session in "Session File Backups"
@@ -70,6 +71,7 @@ def daw_for(project, settings):
 
 def check_permissions():
     """Screen Recording (to see and record the DAW window) and Accessibility (to press play)."""
+    platform.require_mac("DAW project screen recording")
     graphics = ctypes.CDLL("/System/Library/Frameworks/CoreGraphics.framework/CoreGraphics")
     graphics.CGPreflightScreenCaptureAccess.restype = ctypes.c_bool
     if not graphics.CGPreflightScreenCaptureAccess():

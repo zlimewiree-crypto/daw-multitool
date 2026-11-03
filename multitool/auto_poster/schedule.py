@@ -3,7 +3,7 @@ optional login helper (a macOS LaunchAgent the user turns on). Posting reuses Pu
 already went out is never sent twice."""
 from contextlib import contextmanager
 from datetime import datetime, timedelta
-import fcntl
+from multitool import platform
 import json
 import os
 from pathlib import Path
@@ -29,14 +29,14 @@ def _lock(name, wait=True):
     DATA_DIR.mkdir(parents=True, exist_ok=True)
     with (DATA_DIR / f".{name}.lock").open("a") as lock:
         try:
-            fcntl.flock(lock, fcntl.LOCK_EX | (0 if wait else fcntl.LOCK_NB))
+            platform.lock_file(lock, blocking=wait)
         except BlockingIOError:
             yield False
             return
         try:
             yield True
         finally:
-            fcntl.flock(lock, fcntl.LOCK_UN)
+            platform.unlock_file(lock)
 
 
 def load():
@@ -179,7 +179,7 @@ def agent_command():
 
 
 def agent_installed():
-    return agent_file().exists()
+    return platform.IS_MAC and agent_file().exists()
 
 
 def _launchctl(*args):
@@ -188,6 +188,7 @@ def _launchctl(*args):
 
 def install_agent(settings):
     """Checks the queue every few minutes while you're logged in, even with the app closed."""
+    platform.require_mac("Posting while the app is closed")
     agent_file().parent.mkdir(parents=True, exist_ok=True)
     plist = {"Label": AGENT, "ProgramArguments": agent_command(), "RunAtLoad": True, "ProcessType": "Background",
              "StartInterval": int(settings["schedule_check_minutes"] * 60),
@@ -202,11 +203,14 @@ def install_agent(settings):
 
 
 def remove_agent():
+    platform.require_mac("Posting while the app is closed")
     _launchctl("bootout", f"gui/{os.getuid()}/{AGENT}")
     agent_file().unlink(missing_ok=True)
 
 
 def notify(text):
+    if not platform.IS_MAC:
+        return  # the in-app activity/history lists still show the result
     subprocess.run(["/usr/bin/osascript", "-e", "on run argv", "-e",
                     'display notification (item 1 of argv) with title "DAW Multitool"', "-e", "end run", text],
                    stdin=subprocess.DEVNULL, capture_output=True, timeout=15)

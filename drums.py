@@ -78,6 +78,9 @@ def _grid_strength(env, min_s, max_s):
 def classifier_path(build=True):
     """The sound-classifier helper: bundled with the app, or built once from native/ on a Mac with Apple's
     command line tools (source runs). None when neither works; detection then uses the measurements alone."""
+    from multitool import platform
+    if not platform.IS_MAC:
+        return None  # the existing measurement-only model is used on Windows
     for path in CLASSIFIER_BINARIES:
         if path.is_file() and os.access(path, os.X_OK):
             return path

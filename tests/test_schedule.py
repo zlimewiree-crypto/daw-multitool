@@ -133,7 +133,9 @@ class ScheduleTests(unittest.TestCase):
             self.assertEqual(schedule.run_from_helper(), 0)
         made.assert_not_called()  # nothing due, nothing unfinished: no account is touched
 
-    def test_helper_runs_this_app_on_this_queue(self):
+    @patch("multitool.platform.IS_MAC", True)
+    @patch("os.getuid", return_value=501, create=True)
+    def test_helper_runs_this_app_on_this_queue(self, getuid):
         home = tempfile.TemporaryDirectory()
         self.addCleanup(home.cleanup)
         with patch("multitool.auto_poster.schedule.Path.home", return_value=Path(home.name)), \

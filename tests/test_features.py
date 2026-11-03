@@ -28,7 +28,7 @@ SR = 44100
 
 def archive():
     """Move (never delete) the fake media out of the project, with a log, like the other test modules."""
-    target = Path(tempfile.mkdtemp(prefix="daw-feature-tests-", dir="/private/tmp"))
+    target = Path(tempfile.mkdtemp(prefix="daw-feature-tests-", dir=tempfile.gettempdir()))
     with (target / "_log.txt").open("a") as log:
         shutil.move(str(BASE), str(target / BASE.name))
         log.write(f"{datetime.now().isoformat(timespec='seconds')} | done | move | {BASE} | {target / BASE.name}\n")
@@ -265,6 +265,7 @@ class DuplicateAndLoudnessTests(unittest.TestCase):
 
 
 
+@patch("multitool.platform.IS_MAC", True)
 class ProjectModeTests(unittest.TestCase):
     """Project screen-recording mode: name matching, per-version visuals, and the record flow with the DAW mocked."""
 
@@ -311,7 +312,7 @@ class ProjectModeTests(unittest.TestCase):
                          ("new beat", "rage", "new beat\n\n#rage"))
 
         def colour(video, area="scale=1:1"):
-            pixel = subprocess.run([ff, "-ss", "0.5", "-i", video, "-frames:v", "1", "-vf", area + ",scale=1:1",
+            pixel = subprocess.run([ff, "-ss", "0.5", "-i", video, "-frames:v", "1", "-vf", "format=rgb24," + area + ",scale=1:1",
                                     "-f", "rawvideo", "-pix_fmt", "rgb24", "-"], capture_output=True, check=True).stdout
             return max(range(3), key=lambda i: pixel[i]) if max(pixel) > 60 else "black"
 

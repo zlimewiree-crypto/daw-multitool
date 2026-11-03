@@ -20,15 +20,16 @@ from unittest.mock import Mock, patch
 import soundfile
 
 from multitool.audio import bridge as audio_bridge, build, device
+from multitool import platform
 
 ROOT = Path(__file__).resolve().parent.parent
 (ROOT / "test_exports").mkdir(exist_ok=True)
 BASE = Path(tempfile.mkdtemp(prefix="audio_test_", dir=ROOT / "test_exports"))
-HAS_CLANG = subprocess.run(["/usr/bin/xcrun", "--find", "clang"], capture_output=True).returncode == 0
+HAS_CLANG = platform.IS_MAC and shutil.which("xcrun") is not None
 
 
 def archive():
-    target = Path(tempfile.mkdtemp(prefix="daw-audio-tests-", dir="/private/tmp"))
+    target = Path(tempfile.mkdtemp(prefix="daw-audio-tests-", dir=tempfile.gettempdir()))
     with (target / "_log.txt").open("a") as log:
         log.write(f"{datetime.now().isoformat()} | started | move | {BASE} | {target / BASE.name}\n")
         log.flush()
@@ -140,6 +141,7 @@ class NativeTests(unittest.TestCase):
         self.assertEqual(check.stdout.strip(), "ok")
 
 
+@patch("multitool.platform.IS_MAC", True)
 class DeviceTests(unittest.TestCase):
     def test_status_says_what_is_installed(self):
         settings = options(plugin_folder=str(BASE / "status-HAL"))
@@ -227,6 +229,7 @@ class BridgeTests(unittest.TestCase):
         self.assertEqual(audio_bridge.list_devices(helper="/bin/audio-bridge", runner=broken)["devices"], [])
         self.assertEqual(audio_bridge.output_pairs(4), ["Outputs 1–2", "Outputs 3–4"])
 
+    @patch("multitool.platform.IS_MAC", True)
     def test_pass_through_comes_back_only_when_it_was_on_and_installed(self):
         bridge = FakeBridge()
         self.assertFalse(audio_bridge.resume(bridge, options(pass_through=True, plugin_folder=str(BASE / "none"))))
@@ -258,6 +261,7 @@ def settle(root, until, seconds=5):
         time.sleep(0.02)
 
 
+@patch("multitool.platform.IS_MAC", True)
 class SettingsWindowTests(unittest.TestCase):
     def test_install_choose_an_output_and_pass_audio_through(self):
         from multitool import settings as settings_window
@@ -327,6 +331,7 @@ class HomeTests(unittest.TestCase):
         self.assertIn("Settings", [w.cget("text") for w in app.knob.winfo_children() if isinstance(w, ttk.Label)])
 
 
+@patch("multitool.platform.IS_MAC", True)
 class VarispeedDawTests(unittest.TestCase):
     def test_your_daw_follows_the_speed_and_records_through_the_bridge(self):
         from multitool.varispeed import core, ui

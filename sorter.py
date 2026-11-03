@@ -58,7 +58,11 @@ def sorted_root(settings):
 def folder_name(value):
     """Treat names as one folder; Finder displays POSIX ':' as '/' on macOS."""
     value = value.strip()
-    if not value or Path(value).is_absolute() or any(part in (".", "..") for part in value.split("/")) or any(c in value for c in ("\0", "\n", "\r")):
+    if sys.platform == "win32":
+        value = value.replace("\\", "/")
+        if Path(value).is_reserved() or any(c in value for c in '<>:"|?*') or value.endswith((".", " ")):
+            raise ValueError("Enter a folder name that Windows supports.")
+    if not value or Path(value).anchor or any(part in (".", "..") for part in value.split("/")) or any(c in value for c in ("\0", "\n", "\r")):
         raise ValueError("Enter a folder name, without an absolute path or '.' / '..' components.")
     return value.replace("/", ":" if sys.platform == "darwin" else "-")
 

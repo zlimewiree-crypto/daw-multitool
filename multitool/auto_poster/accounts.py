@@ -1,6 +1,6 @@
 """Official account authorization and Keychain storage; no passwords in config files."""
 import base64
-import fcntl
+from multitool import platform as host_platform
 import hashlib
 import html
 from http.server import BaseHTTPRequestHandler, HTTPServer
@@ -135,8 +135,7 @@ class CredentialStore:
 
     def __init__(self, settings, backend=None, lock_path=None):
         if backend is None:
-            from keyring.backends.macOS import Keyring
-            backend = Keyring()  # explicitly use macOS Keychain, never a plaintext fallback
+            backend = host_platform.credential_backend()
         self.backend, self.service = backend, settings["keychain_service"]
         if lock_path is None:
             from app_paths import DATA_DIR
@@ -166,13 +165,17 @@ class CredentialStore:
         never overwrite each other's logins."""
         self.lock_path.parent.mkdir(parents=True, exist_ok=True)
         with open(self.lock_path, "a") as lock:
-            fcntl.flock(lock, fcntl.LOCK_EX)
+            host_platform.lock_file(lock)
             values = self._all()
             update(values)
             self.backend.set_password(self.service, self.ENTRY, json.dumps(values))
 
     def get(self, platform):
-        return self._all().get(platform)
+        # A Windows credential can span multiple vault entries; readers must not race a rotation.
+        self.lock_path.parent.mkdir(parents=True, exist_ok=True)
+        with self.lock_path.open("a") as lock:
+            host_platform.lock_file(lock)
+            return self._all().get(platform)
 
     def set(self, platform, value):
         self._change(lambda values: values.__setitem__(platform, value))

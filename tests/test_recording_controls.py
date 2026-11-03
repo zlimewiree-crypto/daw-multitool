@@ -88,6 +88,7 @@ class PlaybackTests(unittest.TestCase):
         self.foundation.CFRelease.assert_any_call(11)
 
 
+@patch("multitool.platform.IS_MAC", True)
 class PlayFallbackTests(unittest.TestCase):
     def run_record(self, takes, settings=None):
         settings = {**load_settings(), "play_ways": {}, **(settings or {})}

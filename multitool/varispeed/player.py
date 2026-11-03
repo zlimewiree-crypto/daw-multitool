@@ -14,6 +14,7 @@ import queue
 import threading
 
 import numpy as np
+from multitool import platform
 
 from multitool.audio.bridge import output_pairs  # noqa: F401 (the Output pair list)
 from . import core
@@ -133,9 +134,41 @@ class TapePlayer:
 
 def default_stream(rate, callback, device=None, channel_map=None):
     import sounddevice
-    extra = sounddevice.CoreAudioSettings(channel_map=channel_map) if channel_map else None
-    return sounddevice.OutputStream(samplerate=rate, channels=2, dtype="float32", callback=callback, latency="low",
+    extra = sounddevice.CoreAudioSettings(channel_map=channel_map) if channel_map and platform.IS_MAC else None
+    channels = 2
+    if channel_map and not platform.IS_MAC:
+        channels = len(channel_map)
+        stereo_callback = callback
+        left, right = channel_map.index(0), channel_map.index(1)
+
+        def callback(outdata, frames, time, status):
+            stereo = np.empty((frames, 2), dtype=np.float32)
+            stereo_callback(stereo, frames, time, status)
+            outdata.fill(0)
+            outdata[:, left], outdata[:, right] = stereo[:, 0], stereo[:, 1]
+
+    return sounddevice.OutputStream(samplerate=rate, channels=channels, dtype="float32", callback=callback, latency="low",
                                     device=device, extra_settings=extra)
+
+
+class FilePreview:
+    """Organizer preview using the same portable decoder/player as Varispeed; originals are read-only."""
+    def __init__(self, path):
+        samples, rate = core.decode(path)
+        self.player = TapePlayer(samples, rate)
+        self.player.seek(self.player.duration * 0.25)
+        self.player.playing = True
+        try:
+            self.player.open()
+        except Exception:
+            self.player.close()
+            raise
+
+    def poll(self):
+        return None if self.player.playing else 0
+
+    def terminate(self):
+        self.player.close()
 
 
 def output_devices():

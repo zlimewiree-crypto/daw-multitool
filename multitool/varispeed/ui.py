@@ -12,6 +12,7 @@ import tkinter as tk
 from tkinter import filedialog, ttk
 
 from app_paths import update_config
+from multitool import platform
 from multitool import music
 from multitool.audio import bridge as audio_bridge, device as audio_device
 from multitool.scrolling import scroll_area
@@ -83,6 +84,8 @@ class VarispeedApp:
         self.daw_take = None  # the take the audio bridge is recording, in Your DAW mode
         self.listener = lambda event: self.events.put(("bridge", event))
         self.settings = core.settings()
+        if not platform.IS_MAC:
+            self.settings["source"] = "files"
         self.files = {}  # table row -> {"path", "info"}
         self.events = queue.Queue()
         self.cancel = threading.Event()
@@ -117,7 +120,7 @@ class VarispeedApp:
         self.build_output(self.output_section)
         self.bridge.listen(self.listener)
         root.bind("<space>", lambda event: self.typing(event) or self.toggle_play() or "break")
-        root.bind("<Command-Key-0>", lambda event: self.set_target(1.0))
+        root.bind(f"<{platform.MODIFIER}-Key-0>", lambda event: self.set_target(1.0))
         self.refresh_devices()
         self.show_source()
         if self.daw_mode:
@@ -133,6 +136,7 @@ class VarispeedApp:
         ttk.Label(row, text="Plays", style="Muted.TLabel").pack(side="left", padx=(0, 10))
         for value, text in (("files", "Beat files"), ("daw", "Your DAW")):
             ttk.Radiobutton(row, text=text, value=value, variable=self.source,
+                            state="disabled" if value == "daw" and not platform.IS_MAC else "normal",
                             command=self.source_changed).pack(side="left", padx=(0, 14))
         self.dot = tk.Canvas(row, width=10, height=10, highlightthickness=0, background=self.root.cget("background"))
         self.dot.pack(side="right", padx=(6, 0))
@@ -558,7 +562,7 @@ class VarispeedApp:
 
     @staticmethod
     def reveal(path):
-        subprocess.run(["/usr/bin/open", "-R", str(path)], stdin=subprocess.DEVNULL, capture_output=True, timeout=30)
+        platform.reveal_path(path)
 
     def reveal_recordings(self):
         folder = self.recordings_folder()
@@ -567,7 +571,7 @@ class VarispeedApp:
         if take:
             self.reveal(take[0])
         else:
-            subprocess.run(["/usr/bin/open", str(folder)], stdin=subprocess.DEVNULL, capture_output=True, timeout=30)
+            platform.open_path(folder)
 
     def choose_recordings(self):
         if self.recorder or self.saving_take:
