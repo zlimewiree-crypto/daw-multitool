@@ -2,6 +2,8 @@
 window sets its own fonts or colours. Compact, rounded, anti-aliased controls; hairline borders; one accent colour
 used sparingly, so the one main action on each screen stands out."""
 import math
+import struct
+import zlib
 import tkinter as tk
 from tkinter import font, ttk
 
@@ -150,19 +152,21 @@ def _depth(px, py, width, radius, height=None):
 
 
 def _image(owner, key, size, paint, height=None):
-    """A cached see-through image (Tk 9 images keep alpha); `paint(px, py)` gives each pixel's colour and opacity."""
+    """RGBA PNG keeps the same smooth edges on both Tk 8.6 (Windows) and Tk 9 (Mac)."""
     cache = owner.__dict__.setdefault("studio_shapes", {})
     if key not in cache:
         height = height or size
-        rows = []
+        pixels = bytearray()
         for y in range(height):
-            row = []
+            pixels.append(0)  # PNG scanline: no filter
             for x in range(size):
                 colour, cover = paint(x + 0.5, y + 0.5)
-                row.append("#%02x%02x%02x%02x" % (*(round(c) for c in colour), round(255 * max(0.0, min(1.0, cover)))))
-            rows.append("{" + " ".join(row) + "}")
-        image = tk.PhotoImage(master=owner, width=size, height=height)
-        image.put(" ".join(rows))
+                pixels.extend([*(round(c) for c in colour), round(255 * max(0.0, min(1.0, cover)))])
+        def chunk(kind, data):
+            return struct.pack(">I", len(data)) + kind + data + struct.pack(">I", zlib.crc32(kind + data))
+        png = (b"\x89PNG\r\n\x1a\n" + chunk(b"IHDR", struct.pack(">IIBBBBB", size, height, 8, 6, 0, 0, 0))
+               + chunk(b"IDAT", zlib.compress(pixels)) + chunk(b"IEND", b""))
+        image = tk.PhotoImage(master=owner, data=png, format="png")
         cache[key] = image
     return cache[key]
 

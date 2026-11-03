@@ -30,14 +30,14 @@ from multitool.auto_poster.storage import atomic_json, load_settings, manifest, 
 ROOT = Path(__file__).resolve().parent.parent
 (ROOT / "test_exports").mkdir(exist_ok=True)
 BASE = Path(tempfile.mkdtemp(prefix="auto_poster_test_", dir=ROOT / "test_exports"))
-Path("/private/tmp/daw-auto-poster-test-path.txt").write_text(str(BASE))
+(Path(tempfile.gettempdir()) / "daw-auto-poster-test-path.txt").write_text(str(BASE))
 
 
 def archive_test_media():
     """Keep fake audio recoverable without leaving test outputs in the vault."""
     if not BASE.exists():
         return
-    archive = Path(tempfile.mkdtemp(prefix="daw-auto-poster-tests-", dir="/private/tmp"))
+    archive = Path(tempfile.mkdtemp(prefix="daw-auto-poster-tests-", dir=tempfile.gettempdir()))
     destination = archive / BASE.name
     with (archive / "_log.txt").open("a") as log:
         for status in ("started", "done"):
@@ -46,7 +46,7 @@ def archive_test_media():
             log.write(f"{datetime.now().isoformat(timespec='seconds')} | {status} | move | {BASE} | {destination}\n")
             log.flush()
             os.fsync(log.fileno())
-    Path("/private/tmp/daw-auto-poster-test-path.txt").write_text(str(destination))
+    (Path(tempfile.gettempdir()) / "daw-auto-poster-test-path.txt").write_text(str(destination))
 
 
 def setUpModule():
@@ -435,10 +435,10 @@ class PublishTests(unittest.TestCase):
         app = AutoPosterApp.__new__(AutoPosterApp)
         app.jobs, app.settings = {"row": {"receipt": self.receipt}}, self.settings
         app.selected_rows = lambda: ["row"]
-        with patch("multitool.auto_poster.ui.subprocess.Popen") as opened:
+        with patch("multitool.auto_poster.ui.host_platform.open_path") as opened:
             app.preview_selected()
             app.preview_selected("tiktok")
-        self.assertEqual([call.args[0][-1] for call in opened.call_args_list], [str(self.video), str(portrait)])
+        self.assertEqual([call.args[0] for call in opened.call_args_list], [self.video, portrait])
 
     def test_nonblocking_instagram_checks_once_without_sleep(self):
         record = manifest(self.receipt)

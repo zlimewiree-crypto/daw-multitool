@@ -8,6 +8,7 @@ import tkinter as tk
 from tkinter import filedialog, ttk
 
 from app_paths import update_config
+from multitool import platform
 from multitool.auto_poster.render import Cancelled
 from multitool.theme import apply_theme, banner, empty_state, footer
 from .core import (NEWEST_FIRST, SORTS, VIEWS, add_project_folder, changed, load_settings, open_in_daw, scan, show_in_finder,
@@ -18,7 +19,7 @@ COLUMNS = dict(zip(("#0", "daw", "changed", "exports", "folder"), SORTS))  # tab
 
 def when(path, modified):
     stamp = modified.get(path) or changed(path)
-    return datetime.fromtimestamp(stamp).strftime("%b %-d, %Y  %H:%M") if stamp else ""
+    return datetime.fromtimestamp(stamp).strftime("%b %d, %Y  %H:%M").replace(" 0", " ", 1) if stamp else ""
 
 
 def short(folder):
@@ -78,7 +79,7 @@ class LibraryApp:
         actions = ttk.Frame(root, padding=(24, 10, 24, 14))
         actions.pack(fill="x")
         ttk.Button(actions, text="Open in DAW", style="Primary.TButton", command=self.open_selected).pack(side="left")
-        ttk.Button(actions, text="Show in Finder", command=self.reveal_selected).pack(side="left", padx=8)
+        ttk.Button(actions, text=f"Show in {platform.FILE_MANAGER}", command=self.reveal_selected).pack(side="left", padx=8)
         self.rescan_button = ttk.Button(actions, text="Refresh", style="Quiet.TButton", command=self.start_scan)
         self.rescan_button.pack(side="right")
         self.folder_button = ttk.Button(actions, text="Add folder…", style="Quiet.TButton", command=self.add_folder)
@@ -128,7 +129,8 @@ class LibraryApp:
         self.poll_id = self.root.after(100, self.poll_events)
 
     def daw_name(self, path):
-        name = self.settings["daws"].get(path.suffix.lower(), {}).get("app", path.suffix)
+        daw = self.settings["daws"].get(path.suffix.lower(), {})
+        name = daw.get("name") or daw.get("app") or daw.get("process") or path.suffix
         return re.sub(r"\s+(\d+|Suite|Standard|Intro|Lite)\b.*$", "", name)  # "Ableton Live 12 Suite" → "Ableton Live"
 
     def sort_by(self, column):
@@ -187,7 +189,7 @@ class LibraryApp:
         project = self.paths.get(self.tree.parent(row)) or path  # an export row opens its project
         if project.suffix.lower() not in self.settings["daws"]:
             show_in_finder(path)
-            self.status.set(f"No project found for {path.name}; showing it in Finder.")
+            self.status.set(f"No project found for {path.name}; showing it in {platform.FILE_MANAGER}.")
             return
         try:
             open_in_daw(project, self.settings)

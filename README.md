@@ -1,13 +1,15 @@
 # DAW Multitool
 
-A macOS studio application containing Audio Organizer, Auto Poster, Project Library
-and Varispeed, plus a native audio device and pass-through bridge.
+A shared Python studio application containing Audio Organizer, Auto Poster, Project
+Library and Varispeed. macOS additionally has a native audio device and pass-through bridge.
 
 ## Sharing and Windows
 
-This repository contains source code, not a Windows installer. You can edit it on
-Windows, but platform-specific components must be ported before the app can run there.
-Read [START-HERE-WINDOWS.txt](START-HERE-WINDOWS.txt) for the compatibility work required.
+Mac and Windows development use the same repository and tool code. Windows source
+startup, secure credentials, file opening and file playback have a platform layer;
+native DAW capture, background scheduling and the virtual audio device remain Mac-only.
+This is an initial Windows port, not a Windows installer or complete feature parity.
+Read [Windows setup and collaboration](notes/WINDOWS.md) for commands and remaining work.
 
 ## Project documentation
 

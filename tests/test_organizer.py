@@ -21,7 +21,7 @@ BASE = Path(tempfile.mkdtemp(prefix="organizer_audit_test_", dir=ROOT / "test_ex
 
 
 def archive():
-    target = Path(tempfile.mkdtemp(prefix="daw-organizer-tests-", dir="/private/tmp"))
+    target = Path(tempfile.mkdtemp(prefix="daw-organizer-tests-", dir=tempfile.gettempdir()))
     with (target / "_log.txt").open("a") as log:
         log.write(f"{datetime.now().isoformat()} | started | move | {BASE} | {target / BASE.name}\n")
         log.flush()

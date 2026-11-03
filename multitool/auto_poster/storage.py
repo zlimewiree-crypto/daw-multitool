@@ -1,6 +1,6 @@
 """Auto Poster settings and local delivery receipts; credentials never go here."""
 import json
-import fcntl
+from multitool import platform
 from contextlib import contextmanager
 from pathlib import Path
 import re
@@ -44,13 +44,13 @@ def receipt_lock(path):
     path = Path(path).resolve()
     with path.with_name(f".{path.name}.lock").open("a") as lock:
         try:
-            fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            platform.lock_file(lock, blocking=False)
         except BlockingIOError:
             raise ValueError("This video is being updated in another window. Wait, then check its saved result.") from None
         try:
             yield
         finally:
-            fcntl.flock(lock, fcntl.LOCK_UN)
+            platform.unlock_file(lock)
 
 
 def video_variant(record, format_name):

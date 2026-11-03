@@ -1,7 +1,12 @@
 # DAW Multitool structure
 
-One macOS application opens separate windows for each tool. The organizer is the first
+One shared application opens separate windows for each tool. The organizer is the first
 tool; Auto Poster is the second; Project Library is the third. Future tools do not need to change the organizer or the home screen.
+
+Mac and Windows share the Python host and tools. `multitool/platform.py` supplies OS
+locks, data paths, credential vaults and file-opening actions; `config.windows.json`
+overrides platform defaults. Native DAW capture, the login helper and the virtual audio
+device remain Mac-only. See [Windows setup and collaboration](WINDOWS.md).
 
 ## Run and build
 
@@ -69,7 +74,8 @@ Tools that touch audio must keep the same preview, collision, settling and loggi
 ## Settings and saved data
 
 Source runs keep existing `config.json`, labels, model and cache in the project folder.
-Bundled runs use `~/Library/Application Support/DAW Multitool/`. Only a default config
+Mac bundled runs use `~/Library/Application Support/DAW Multitool/`; Windows bundles use
+`%LOCALAPPDATA%/DAW Multitool/`. Only a default config
 and model ship with the application; personal labels, paths, caches and audio are excluded.
 Defaults are copied only when missing, so app upgrades preserve existing user settings.
 The bundled app starts with defaults; project-specific settings are not imported automatically.

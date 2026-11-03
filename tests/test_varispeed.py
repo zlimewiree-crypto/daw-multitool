@@ -27,7 +27,7 @@ BASE = Path(tempfile.mkdtemp(prefix="varispeed_test_", dir=ROOT / "test_exports"
 
 
 def archive():
-    target = Path(tempfile.mkdtemp(prefix="daw-varispeed-tests-", dir="/private/tmp"))
+    target = Path(tempfile.mkdtemp(prefix="daw-varispeed-tests-", dir=tempfile.gettempdir()))
     with (target / "_log.txt").open("a") as log:
         log.write(f"{datetime.now().isoformat()} | started | move | {BASE} | {target / BASE.name}\n")
         log.flush()

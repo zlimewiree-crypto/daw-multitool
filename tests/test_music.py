@@ -20,7 +20,7 @@ BASE = Path(tempfile.mkdtemp(prefix="music_test_", dir=ROOT / "test_exports"))
 
 
 def archive():
-    target = Path(tempfile.mkdtemp(prefix="daw-music-tests-", dir="/private/tmp"))
+    target = Path(tempfile.mkdtemp(prefix="daw-music-tests-", dir=tempfile.gettempdir()))
     with (target / "_log.txt").open("a") as log:
         log.write(f"{datetime.now().isoformat()} | started | move | {BASE} | {target / BASE.name}\n")
         log.flush()

@@ -1,7 +1,8 @@
 # DAW Multitool — instructions for coding agents
 
 ## What this project is
-A macOS application hosting independent studio tools: Audio Organizer and Auto Poster.
+A shared macOS/Windows application hosting Audio Organizer, Auto Poster, Project Library
+and Varispeed. Windows native integrations are incomplete; see `notes/WINDOWS.md`.
 Further functions belong in separate adapters in `multitool/tools/`.
 The shared registry drives the home screen and app packaging. See
 `notes/ARCHITECTURE.md` before adding a tool. The organizer roadmap is retained;
@@ -16,7 +17,7 @@ Two producers who are new to coding. Explain what you changed in plain language,
 keep explanations short, and don't assume they know terminal or Git jargon.
 
 ## Tech stack
-- Python 3.11+ on macOS
+- Python 3.11+ on macOS; use Python 3.12 for the Windows development environment
 - Tkinter home screen and tool windows; PyInstaller is a build-only dependency
 - Auto Poster: bundled FFmpeg, Requests, macOS Keychain via keyring, official social APIs
 - `watchdog` (folder watching), `mutagen` (audio length/metadata)
@@ -24,7 +25,9 @@ keep explanations short, and don't assume they know terminal or Git jargon.
   detection; BPM/key from file names first (`multitool/music.py`); `ffmpeg` (video), YouTube Data API
 - All paths, thresholds and tag words come from `config.json` — never hardcode them.
   `config.example.json` is the template; `config.json` is gitignored.
-- Use `app_paths.DATA_DIR` for writable app data; bundled runs use Application Support.
+- Use `app_paths.DATA_DIR` for writable app data; bundles use Application Support on Mac
+  and LocalAppData on Windows. Route OS operations through `multitool/platform.py` and
+  preserve both platforms when changing shared code. Each developer uses their own clone.
   Import tool dependencies lazily through their adapters; keep one window per tool.
 
 ## Hard rules (these protect real music files)

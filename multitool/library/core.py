@@ -8,6 +8,7 @@ import re
 import subprocess
 
 from app_paths import load_section, update_config
+from multitool import platform
 from multitool.auto_poster.project import SKIP_FOLDERS, daw_for, find_project, project_index
 from multitool.auto_poster.render import Cancelled
 from multitool.auto_poster.storage import load_settings as poster_settings
@@ -126,11 +127,11 @@ def sort_rows(rows, column, descending, modified, daw=lambda path: path.suffix):
 def open_in_daw(project, settings):
     """`open -a` loads the project in its DAW; the file itself is never changed here."""
     app = daw_for(project, settings)["app"]
-    result = subprocess.run(["/usr/bin/open", "-a", app, str(project)], stdin=subprocess.DEVNULL,
-                            capture_output=True, timeout=30)
-    if result.returncode:
-        raise ValueError(f"Couldn't open {app}. Check its name under auto_poster → daws in config.json.")
+    try:
+        platform.open_path(project, app)
+    except (OSError, subprocess.SubprocessError) as error:
+        raise ValueError(f"Couldn't open the project. Check its DAW association or configured app: {error}") from error
 
 
 def show_in_finder(path):
-    subprocess.run(["/usr/bin/open", "-R", str(path)], stdin=subprocess.DEVNULL, capture_output=True, timeout=30)
+    platform.reveal_path(path)

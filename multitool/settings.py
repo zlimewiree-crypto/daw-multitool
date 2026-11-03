@@ -8,10 +8,12 @@ import queue
 import subprocess
 import threading
 import tkinter as tk
+import webbrowser
 from tkinter import messagebox, ttk
 
 from app_paths import DATA_DIR
 from multitool import __version__
+from multitool import platform
 from multitool.audio import bridge as audio_bridge, device
 from multitool.scrolling import scroll_area
 from multitool.theme import ACCENT, BACKGROUND, BORDER, DANGER, MUTED, PANEL, apply_theme, banner, footer, icon
@@ -70,6 +72,14 @@ class SettingsWindow:
         banner(root, "Settings", "DAW Multitool's own audio device, and where its sound goes.", kind="settings")
         footer(root, self.status, wraplength=720)
         page = scroll_area(root, padding=(26, 18, 26, 10))
+        self.poll_id = None
+        if not platform.IS_MAC:
+            ttk.Label(page, text="DAW audio device", style="Heading.TLabel").pack(anchor="w")
+            ttk.Label(page, text="The virtual audio device and whole-DAW Varispeed are currently available on macOS. "
+                      "Windows support is pending. Varispeed can play and save individual beat files.",
+                      wraplength=680, justify="left").pack(anchor="w", pady=(8, 20))
+            self.build_about(page)
+            return
         self.build_device(page)
         ttk.Separator(page).pack(fill="x", pady=16)
         self.build_pass_through(page)
@@ -159,7 +169,7 @@ class SettingsWindow:
         row = ttk.Frame(parent)
         row.pack(fill="x", pady=(6, 0))
         ttk.Label(row, text=f"DAW Multitool v{__version__}", style="Muted.TLabel").pack(side="left")
-        ttk.Button(row, text="Show my settings in Finder", style="Quiet.TButton", command=self.reveal_data).pack(side="right")
+        ttk.Button(row, text=f"Show my settings in {platform.FILE_MANAGER}", style="Quiet.TButton", command=self.reveal_data).pack(side="right")
 
     # ---------- the audio device ----------
     def refresh_devices(self, wait=False):
@@ -335,13 +345,15 @@ class SettingsWindow:
 
     @staticmethod
     def open_url(url):
-        subprocess.run(["/usr/bin/open", url], stdin=subprocess.DEVNULL, capture_output=True, timeout=30)
+        webbrowser.open(url)
 
     @staticmethod
     def reveal_data():
         config = DATA_DIR / "config.json"
-        target = ["-R", str(config)] if config.exists() else [str(DATA_DIR)]
-        subprocess.run(["/usr/bin/open", *target], stdin=subprocess.DEVNULL, capture_output=True, timeout=30)
+        if config.exists():
+            platform.reveal_path(config)
+        else:
+            platform.open_path(DATA_DIR)
 
     def close(self):
         self.bridge.unlisten(self.listener)

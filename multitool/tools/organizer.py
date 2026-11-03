@@ -32,6 +32,12 @@ def self_check():
     if score != 0.5:
         raise RuntimeError("The audio worker returned an unexpected result")
     classifier = drums.classifier_path()
+    from multitool import platform
+    if not platform.IS_MAC:
+        model = drums.load_model()
+        basic = model.get("basic", model)
+        drums.drum_probability(basic["means"], model)  # verify the Windows fallback is packaged
+        return
     if classifier is None:
         raise RuntimeError("The sound classifier is missing (native/sound_classifier.swift)")
     answer = subprocess.run([str(classifier), "--self-check"], stdin=subprocess.DEVNULL, capture_output=True, text=True, timeout=60)

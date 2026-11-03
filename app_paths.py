@@ -1,23 +1,33 @@
 """Shared resources and writable settings for source runs and macOS bundles."""
 import hashlib
 import json
-import fcntl
 import os
 import sys
 import tempfile
 import threading
 import time
 from pathlib import Path
+from multitool import platform
 
 RESOURCE_DIR = Path(__file__).resolve().parent
 FROZEN = getattr(sys, "frozen", False)
 DATA_DIR = Path(os.environ.get("DAW_MULTITOOL_DATA_DIR") or (
-    Path.home() / "Library" / "Application Support" / "DAW Multitool" if FROZEN else RESOURCE_DIR
+    platform.user_data_dir() if FROZEN else RESOURCE_DIR
 )).expanduser().resolve()
 if FROZEN:
     os.environ.setdefault("NUMBA_CACHE_DIR", str(DATA_DIR / "numba-cache"))
 
 _CONFIG_LOCK = threading.RLock()
+
+
+def default_config():
+    """Shared defaults plus OS defaults; saved personal settings still take precedence."""
+    defaults = json.loads((RESOURCE_DIR / "config.example.json").read_text(encoding="utf-8"))
+    if platform.IS_WINDOWS:
+        overrides = json.loads((RESOURCE_DIR / "config.windows.json").read_text(encoding="utf-8"))
+        for section, values in overrides.items():
+            defaults[section] = {**defaults.get(section, {}), **values}
+    return defaults
 
 
 def initialize_data():
@@ -35,6 +45,8 @@ def initialize_data():
         try:
             with destination.open("xb") as target:
                 data = source.read_bytes()
+                if destination_name == "config.json":
+                    data = json.dumps(default_config(), indent=2).encode("utf-8")
                 if model:  # stamp the copy so a later app version knows it may replace it
                     data = json.dumps({**json.loads(data), "origin": "shipped"}, indent=2).encode()
                 target.write(data)
@@ -92,7 +104,7 @@ def atomic_json(path, value, indent=2):
 def load_section(section, path=None):
     """One tool's settings: the shipped defaults with the user's saved values on top. A missing or damaged
     config.json counts as nothing saved."""
-    defaults = json.loads((RESOURCE_DIR / "config.example.json").read_text())[section]
+    defaults = default_config()[section]
     try:
         saved = json.loads(Path(path or DATA_DIR / "config.json").read_text()).get(section, {})
     except (OSError, ValueError, AttributeError):  # AttributeError: the file holds a list, not settings
@@ -106,7 +118,7 @@ def update_config(section, values, path=None):
     path.parent.mkdir(parents=True, exist_ok=True)
     # A separate lock file keeps its identity when config.json is atomically replaced.
     with _CONFIG_LOCK, path.with_name(f".{path.name}.lock").open("a") as lock:
-        fcntl.flock(lock, fcntl.LOCK_EX)
+        platform.lock_file(lock)
         try:
             try:
                 config = json.loads(path.read_text())
@@ -126,4 +138,4 @@ def update_config(section, values, path=None):
             config[section] = {**config.get(section, {}), **values}
             atomic_json(path, config)
         finally:
-            fcntl.flock(lock, fcntl.LOCK_UN)
+            platform.unlock_file(lock)

@@ -172,7 +172,7 @@ def validate(request, settings):
 
 def _quoted(path):
     """A file path as a filter option value: FFmpeg reads it literally inside single quotes."""
-    text = str(path)
+    text = Path(path).as_posix().replace(":", "\\:")  # drive letters are FFmpeg option separators unless escaped
     if "'" in text:
         raise ValueError("A file path for the video text contains an apostrophe.")
     return "'" + text + "'"
@@ -194,6 +194,7 @@ def overlay_files(lines, folder=None):
 def overlay_font(settings, bold=True):
     """The first installed font from the settings (every Mac has the Arial family in Supplemental)."""
     for candidate in settings["overlay_fonts" if bold else "overlay_fonts_regular"]:
+        candidate = os.path.expandvars(candidate)
         if Path(candidate).is_file():
             return candidate
     raise ValueError("None of the fonts for on-video text were found. Check overlay_fonts in the settings.")
@@ -228,7 +229,8 @@ def command(request, settings, target, duration, text=()):
     else:
         end += ("," + ",".join(extras) if extras else "") + "[v]"
     if request.fit == "Blur":  # whole visual in the middle, over a stretched, blurred copy filling the frame
-        small = f"{width // 16 * 2}:{height // 16 * 2}"  # blur a small copy: same look, far faster on big recordings
+        # blur a small copy: same look, far faster on big recordings; >= 64 px or FFmpeg 9's gblur turns the colour green
+        small = f"{max(64, width // 16 * 2)}:{max(64, height // 16 * 2)}"
         picture = (f"[0:v]split[bg][fg];[bg]scale={small},gblur=sigma=6,scale={width}:{height}[b];"
                    f"[fg]scale={width}:{height}:force_original_aspect_ratio=decrease[f];"
                    f"[b][f]overlay=(W-w)/2:(H-h)/2,{end}")

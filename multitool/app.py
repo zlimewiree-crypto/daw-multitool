@@ -9,6 +9,7 @@ from tkinter import messagebox, ttk
 
 from app_paths import DATA_DIR, FROZEN, initialize_data
 from multitool import __version__
+from multitool import platform
 from multitool.audio import bridge as audio_bridge
 from multitool.scrolling import scroll_area
 from multitool.tools import TOOLS, Tool
@@ -45,7 +46,7 @@ class MultitoolApp:
         self.settings_knob(bar)
         content = scroll_area(main, padding=(24, 20, 24, 8))  # more tools than fit the window scroll with the wheel or trackpad
         for tool in TOOLS:
-            card = ttk.Frame(content, style="Card.TFrame", padding=(4, 2), cursor="pointinghand")
+            card = ttk.Frame(content, style="Card.TFrame", padding=(4, 2), cursor=platform.POINTER)
             card.pack(fill="x", pady=(0, 10))
             card.columnconfigure(1, weight=1)
             tile = icon(card, tool.id, size=40)
@@ -65,11 +66,12 @@ class MultitoolApp:
         except tk.TclError:
             pass
         root.bind_all("<<OpenSettings>>", lambda event: self.open_settings())  # tool windows ask for it this way
+        root.bind_all(f"<{platform.MODIFIER}-comma>", lambda event: self.open_settings())
         self.resume_id = root.after(400, self.resume_audio)
 
     def settings_knob(self, bar):
         """The knob at the top right of the home screen: opens Settings."""
-        knob = ttk.Frame(bar, style="Header.TFrame", cursor="pointinghand", padding=(16, 0, 0, 0))
+        knob = ttk.Frame(bar, style="Header.TFrame", cursor=platform.POINTER, padding=(16, 0, 0, 0))
         knob.pack(side="right", before=bar.pack_slaves()[0])  # its room first, so the long subtitle wraps instead
         dial = icon(knob, "settings", size=34, background=HEADER)
         dial.pack(side="left", padx=(0, 8))
@@ -93,7 +95,7 @@ class MultitoolApp:
 
     def nav_item(self, sidebar, tool):
         """A sidebar link: the tool's icon and name on a rounded highlight under the pointer."""
-        row = ttk.Frame(sidebar, style="NavRow.TFrame", padding=(8, 6), cursor="pointinghand")
+        row = ttk.Frame(sidebar, style="NavRow.TFrame", padding=(8, 6), cursor=platform.POINTER)
         row.pack(fill="x", pady=1)
         tile = icon(row, tool.id, size=26)
         tile.pack(side="left", padx=(0, 10))
@@ -171,6 +173,8 @@ def self_check():
 
 def check_audio():
     """The audio device and bridge are bundled, and the bridge's resampler works (no audio device is opened)."""
+    if not platform.IS_MAC:
+        return
     from multitool.audio import device
     helper = audio_bridge.helper_path(build_it=False)
     if FROZEN and (helper is None or device.bundled_driver(build_it=False) is None):
@@ -206,7 +210,7 @@ def main(argv=None):
     try:
         initialize_data()
         logging.basicConfig(filename=DATA_DIR / "app.log", level=logging.INFO)
-        if FROZEN:  # from source, macOS would file the prompts under Terminal or VS Code instead
+        if FROZEN and platform.IS_MAC:  # macOS permissions belong to the bundled application
             from multitool import permissions
             root.withdraw()
             apply_theme(root)

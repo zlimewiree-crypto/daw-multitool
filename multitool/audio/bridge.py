@@ -10,6 +10,7 @@ import subprocess
 import threading
 
 from app_paths import FROZEN, RESOURCE_DIR, load_section, update_config
+from multitool import platform
 from . import build, device
 
 BUNDLED = RESOURCE_DIR / "native" / "audio-bridge"
@@ -17,6 +18,8 @@ BUNDLED = RESOURCE_DIR / "native" / "audio-bridge"
 
 def helper_path(build_it=True):
     """The bridge the app ships with, or (source runs) one built from native/. None when neither is possible."""
+    if not platform.IS_MAC:
+        return None
     if BUNDLED.is_file() and os.access(BUNDLED, os.X_OK):
         return BUNDLED
     if FROZEN:
@@ -186,6 +189,8 @@ def remember(**values):
 
 def resume(bridge=None, options=None):
     """At app start: pass-through comes back on if it was on when the app closed and the device is installed."""
+    if not platform.IS_MAC:
+        return False
     options = options or settings()
     if not options["pass_through"] or not device.installed_path(options).is_dir():
         return False

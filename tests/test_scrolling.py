@@ -30,8 +30,9 @@ class ScrollingTests(unittest.TestCase):
         self.assertGreater(self.top(), 0)
         self.send(self.lines[3], "<MouseWheel>", 120)
         self.assertEqual(self.top(), 0)
-        self.send(self.lines[3], "<TouchpadScroll>", (-40) & 0xFFFF)  # Tk 9 packs x/y; 40 px down
-        self.assertGreater(self.top(), 0)
+        if float(self.root.tk.call("info", "tclversion")) >= 9:
+            self.send(self.lines[3], "<TouchpadScroll>", (-40) & 0xFFFF)  # Tk 8.6 sends MouseWheel instead
+            self.assertGreater(self.top(), 0)
 
     def test_a_long_text_box_keeps_the_wheel_for_itself(self):
         box = tk.Text(self.page, height=3)

@@ -16,6 +16,7 @@ import subprocess
 import zipfile
 
 from app_paths import FROZEN, RESOURCE_DIR, load_section
+from multitool import platform
 from . import build
 
 DEVICE_UID = "com.dawmultitool.audio.device"
@@ -31,6 +32,8 @@ def settings():
 
 def bundled_driver(build_it=True):
     """The device the app ships with (zipped), or (source runs) one built from native/. None when neither is possible."""
+    if not platform.IS_MAC:
+        return None
     if BUNDLED.is_file():
         return BUNDLED
     if FROZEN or not build_it:
@@ -120,6 +123,7 @@ def as_administrator(commands, prompt, runner=subprocess.run):
 
 def install(run=False, runner=subprocess.run, options=None):
     """Installs or updates the device. A dry run unless `run`: (True, the commands it would run)."""
+    platform.require_mac("The DAW Multitool audio device")
     source = bundled_driver()
     if source is None:
         return False, ("This copy of DAW Multitool doesn't include its audio device. From source, install Apple's "
@@ -132,6 +136,7 @@ def install(run=False, runner=subprocess.run, options=None):
 
 def remove(run=False, runner=subprocess.run, options=None):
     """Removes the device. A dry run unless `run`."""
+    platform.require_mac("The DAW Multitool audio device")
     commands = remove_commands(options)
     if not run:
         return True, "\n".join(commands)
